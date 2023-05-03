@@ -1,0 +1,18 @@
+#include<stdio.h>
+# define the processes table with allocation,max and available fields
+
+{['alloc':[1,1,2],'max':[5,4,4]},
+{'alloc':[2,1,2],'max':[4,3,3]},
+{'alloc':[3,0,1],'max':[9,1,3]},
+{'alloc':[0,2,0],'max':[8,6,4]},
+{'alloc':[1,1.2],'max':[2,2,3]}
+
+# calculate the need matrix
+need_matrix=[]
+for process in processes:
+	need=[max_val-alloc_val for max_val,alloc_val in zip(process['max'],process['alloc'])]
+	need_matrix.append(need)
+# print the need matrix
+print("need matrix:")
+for i, need in enumerate(need_matrix:):
+	print(f"P{i}: {need}")
