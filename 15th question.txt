@@ -1,0 +1,29 @@
+#include<stdio.h>
+#include<stdlib.h>
+int main() {
+	int tracks[100],n,head,i,distance=0;
+	printf("enter the number of tracks:");
+	scanf("%d",&n);
+	printf("enter the track position:");
+	for (i=0;i<n;i++)
+	scanf("%d",&tracks[i]);
+	printf("enter the initial head position:");
+	scanf("%d",&head);
+	tracks[n]=head;
+	n++;
+	for(i=0;i<n;i++){
+	int j,min_index=i;
+	for(j=i+1;j<n;j++){
+		if (tracks[j]<tracks[min_index])
+		min_index=j;
+	}
+	int temp=tracks[i];
+	tracks[i]=tracks[min_index];
+	tracks[min_index]=temp;
+	}
+	for(i=0;i<n;i++)
+	distance+=abs(tracks[i+1]-tracks[i]);
+	printf("total head movement=%d\n",distance);
+	printf("average head movement=%2f\n",(float)distance/(n-1));
+	return 0;
+}
