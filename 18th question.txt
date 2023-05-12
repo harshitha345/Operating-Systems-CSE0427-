@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define BUFFER_SIZE 3
+#define NUM_PRODUCERS 1
+#define NUM_CONSUMERS 1
+#define NUM_ITEMS_TO_PRODUCE 4
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+sem_t full, empty;
+pthread_mutex_t mutex;
+
+void *producer(void *arg) {
+    int item = 1;
+    while(item <= NUM_ITEMS_TO_PRODUCE) {
+        // wait if the buffer is full
+        sem_wait(&empty);
+        
+        // acquire the lock
+        pthread_mutex_lock(&mutex);
+        
+        // produce an item and add it to the buffer
+        buffer[in] = item;
+        printf("Producer produced item %d at index %d\n", item, in);
+        in = (in+1) % BUFFER_SIZE;
+ // release the lock
+        pthread_mutex_unlock(&mutex);
+        
+        // signal that the buffer is now full
+        sem_post(&full);
+        
+        item++;
+    }
+}
+
+void *consumer(void *arg) {
+    int item;
+    while(1) {
+        // wait if the buffer is empty
+        sem_wait(&full);
+        
+        // acquire the lock
+        pthread_mutex_lock(&mutex);
+        
+        // consume an item from the buffer
+        item = buffer[out];
+        printf("Consumer consumed item %d from index %d\n", item, out);
+        out = (out+1) % BUFFER_SIZE;
+        
+        // release the lock
+        pthread_mutex_unlock(&mutex);
+        
+        // signal that the buffer is now empty
+        sem_post(&empty);
+    }
+}
+
+int main() {
+    pthread_t producer_threads[NUM_PRODUCERS], consumer_threads[NUM_CONSUMERS];
+    int i;
+// initialize semaphores and mutex
+    sem_init(&full, 0, 0);
+    sem_init(&empty, 0, BUFFER_SIZE);
+    pthread_mutex_init(&mutex, NULL);
+    
+    // consume an item in the beginning to show that the buffer is empty
+    sem_wait(&full);
+    pthread_mutex_lock(&mutex);
+    printf("Consumed an item from the buffer\n");
+    pthread_mutex_unlock(&mutex);
+    sem_post(&empty);
+    
+    // create producer threads
+    for(i=0; i<NUM_PRODUCERS; i++) {
+        pthread_create(&producer_threads[i], NULL, producer, NULL);
+    }
+    
+    // create consumer threads
+    for(i=0; i<NUM_CONSUMERS; i++) {
+        pthread_create(&consumer_threads[i], NULL, consumer, NULL);
+    }
+    
+    // produce 4 items to show that the buffer is full
+    for(i=1; i<=NUM_ITEMS_TO_PRODUCE; i++) {
+        sem_wait(&empty);
+        pthread_mutex_lock(&mutex);
+        buffer[in] = i;
+        printf("Producer produced item %d at index %d\n", i, in);
+        in = (in+1) % BUFFER_SIZE;
+        pthread_mutex_unlock(&mutex);
+        sem_post(&full);
+    }
+    
+    // wait for producer threads to finish
+    for(i=0; i<NUM_PRODUCERS; i++) {
+        pthread_join(producer_threads[i], NULL);
+    }
+    
+// wait for consumer threads to finish
+    for(i=0; i<NUM_CONSUMERS; i++) {
+        pthread_join(consumer_threads[i], NULL);
+    }
+    
+    // destroy semaphores and mutex
+    sem_destroy(&full);
+    sem_destroy(&empty);
+    } 
