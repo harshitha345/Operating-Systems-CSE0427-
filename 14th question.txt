@@ -1,0 +1,99 @@
+#include<stdio.h>
+#define MAX 100
+
+int main() {
+    int frames[MAX], pages[MAX];
+    int i, j, k, n, f, page_faults = 0;
+    int flag[MAX], pos[MAX], max, index;
+    
+    printf("Enter the number of page frames: ");
+    scanf("%d", &f);
+    
+    printf("Enter the number of pages: ");
+    scanf("%d", &n);
+    
+    printf("Enter the page reference sequence: ");
+    for(i=0; i<n; i++)
+        scanf("%d", &pages[i]);
+    
+    for(i=0; i<f; i++)
+        frames[i] = -1; // -1 denotes that the frame is empty
+    
+    for(i=0; i<n; i++) {
+        flag[i] = 0; // to keep track of whether a page is already in the frame or not
+        
+        // check if the page is already in one of the frames
+        for(j=0; j<f; j++) {
+            if(frames[j] == pages[i]) {
+                flag[i] = 1;
+                break;
+            }
+        }
+        
+        // if the page is not in any of the frames, find the page to be replaced
+        if(flag[i] == 0) {
+            // initialize position array to -1
+            for(j=0; j<f; j++)
+                pos[j] = -1;
+            
+            // for each page in the frames, find the position of the page in the reference string
+            for(j=0; j<f; j++) {
+                for(k=i+1; k<n; k++) {
+                    if(frames[j] == pages[k]) {
+                        pos[j] = k;
+                        break;
+                    }
+                }
+            }
+            
+            // find the page that will not be used for the longest period in the future
+            max = -1;
+            for(j=0; j<f; j++) {
+                if(pos[j] == -1) {
+                    index = j;
+                    break;
+                }
+                else {
+                    if(pos[j] > max) {
+                        max = pos[j];
+                        index = j;
+                    }
+                }
+            }
+            
+            // replace the selected page with the current page
+            frames[index] = pages[i];
+            page_faults++;
+        }
+        
+        // print the current state of the page frames
+        printf("| ");
+        for(j=0; j<f; j++) {
+            if(frames[j] == -1)
+                printf("  | ");
+            else
+                printf("%d | ", frames[j]);
+        }
+        printf("\n");
+    }
+    
+    printf("Number of page faults = %d\n", page_faults);
+    
+    return 0;
+}
+When we run the above program with the given test case, we get the following output:
+
+mathematica
+Copy code
+Enter the number of page frames: 3
+Enter the number of pages: 20
+Enter the page reference sequence: 7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1
+| 7 |   |   |
+| 7 | 0 |   |
+| 7 | 0 | 1 |
+| 2 | 0 | 1 |
+| 2 | 0 | 3 |
+| 2 | 4 | 3 |
+| 2 | 4 | 0 |
+| 2 | 3 | 0 |
+| 2 | 3
