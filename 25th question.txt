@@ -1,0 +1,51 @@
+#include <stdio.h>
+
+#define BLOCK_SIZE 1 // One block is the size of a disk I/O operation
+
+#define FILE_SIZE 100
+
+// Calculate the number of disk I/O operations required for contiguous allocation
+int contiguous() {
+    int i;
+    int numOperations = 0;
+
+    // Calculate the number of disk I/O operations required to read all blocks
+    for (i = 0; i < FILE_SIZE; i++) {
+        numOperations++;
+    }
+
+    return numOperations;
+}
+
+// Calculate the number of disk I/O operations required for linked allocation
+int linked() {
+    int i;
+    int numOperations = 0;
+
+    // Calculate the number of disk I/O operations required to read all blocks
+    for (i = 0; i < FILE_SIZE; i++) {
+        numOperations++; // Read the block's pointer
+        numOperations++; // Read the block itself
+    }
+
+    return numOperations;
+}
+
+// Calculate the number of disk I/O operations required for indexed allocation
+int indexed() {
+    int numOperations = 0;
+
+    // Calculate the number of disk I/O operations required to read the index block
+    numOperations++;
+
+    // Calculate the number of disk I/O operations required to read all blocks
+    numOperations += FILE_SIZE;
+
+    return numOperations;
+}
+
+int main() {
+    printf("Contiguous allocation: %d disk I/O operations\n", contiguous());
+    printf("Linked allocation: %d disk I/O operations\n", linked()); 
+}
+
